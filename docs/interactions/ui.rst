@@ -226,6 +226,76 @@ to show the next or previous page.
         view = Paginator(["Page 1", "Page 2", "Page 3"])
         await ctx.send("Page 1", view=view)
 
+Advanced Components
+-------------------
+
+The UI kit also provides a number of layout components that only work inside
+of a :class:`~discord.ui.LayoutView`. These components allow building complex
+message layouts with embedded media and rich formatting.
+
+Action Rows and Layout Views
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An :class:`~discord.ui.ActionRow` groups interactive items within a layout.
+Use it inside a :class:`~discord.ui.LayoutView` to position buttons or selects.
+
+.. code-block:: python3
+
+    class ActionView(discord.ui.LayoutView):
+        row = discord.ui.ActionRow()
+
+        @row.button(label="Click Me")
+        async def click_me(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await interaction.response.send_message("You clicked the row button!")
+
+Containers
+~~~~~~~~~~
+
+Containers group other layout components together and can be styled with an
+accent colour.
+
+.. code-block:: python3
+
+    class ContainerView(discord.ui.LayoutView):
+        container = discord.ui.Container(
+            discord.ui.TextDisplay("Hello from a container!"),
+            discord.ui.ActionRow(discord.ui.Button(label="OK")),
+        )
+
+Files and Media Galleries
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use :class:`~discord.ui.File` to reference attachments uploaded alongside the
+view. :class:`~discord.ui.MediaGallery` displays a collection of images or
+videos.
+
+.. code-block:: python3
+
+    class GalleryView(discord.ui.LayoutView):
+        file = discord.ui.File("attachment://local.png")
+
+        def __init__(self):
+            super().__init__()
+            self.gallery = discord.ui.MediaGallery()
+            self.gallery.add_item("https://example.com/image.png", description="Example")
+
+Sections, Text Displays and Thumbnails
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sections organise text with an optional accessory like a thumbnail. Additional
+static text can be shown with :class:`~discord.ui.TextDisplay` while
+:class:`~discord.ui.Separator` provides spacing between elements.
+
+.. code-block:: python3
+
+    class InfoView(discord.ui.LayoutView):
+        section = discord.ui.Section(
+            "Important information",
+            accessory=discord.ui.Thumbnail("https://example.com/thumb.png"),
+        )
+
+        separator = discord.ui.Separator()
+        extra = discord.ui.TextDisplay("More details here")
 See Also
 --------
 
