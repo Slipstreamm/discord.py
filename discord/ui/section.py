@@ -117,16 +117,6 @@ class Section(Item[V]):
     def _is_v2(self) -> bool:
         return True
 
-    # Accessory can be a button, and thus it can have a callback so, maybe
-    # allow for section to be dispatchable and make the callback func
-    # be accessory component callback, only called if accessory is
-    # dispatchable?
-    def is_dispatchable(self) -> bool:
-        return self.accessory.is_dispatchable()
-
-    def is_persistent(self) -> bool:
-        return self.accessory.is_persistent()
-
     def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this section.
         and it's children, if applicable.
@@ -236,13 +226,15 @@ class Section(Item[V]):
 
     @classmethod
     def from_component(cls, component: SectionComponent) -> Self:
-        from .view import _component_to_item  # >circular import<
+        from .view import _component_to_item
 
-        return cls(
-            *[_component_to_item(c) for c in component.components],
-            accessory=_component_to_item(component.accessory),
-            id=component.id,
-        )
+        # using MISSING as accessory so we can create the new one with the parent set
+        self = cls(id=component.id, accessory=MISSING)
+        self.accessory = _component_to_item(component.accessory, self)
+        self.id = component.id
+        self._children = [_component_to_item(c, self) for c in component.components]
+
+        return self
 
     def to_components(self) -> List[Dict[str, Any]]:
         components = []

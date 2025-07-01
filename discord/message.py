@@ -1405,6 +1405,12 @@ class PartialMessage(Hashable):
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
 
+            .. note::
+
+                If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
+                explicitly set to ``None`` or empty array, as required, the ``content``, ``embed``,
+                ``embeds``, and ``attachments`` parameters.
+
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
 
@@ -1446,8 +1452,8 @@ class PartialMessage(Hashable):
             data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
             message = Message(state=self._state, channel=self.channel, data=data)
 
-        if view and not view.is_finished():
-            interaction: Optional[MessageInteraction] = getattr(self, 'interaction', None)
+        if view and not view.is_finished() and view.is_dispatchable():
+            interaction: Optional[MessageInteractionMetadata] = getattr(self, 'interaction_metadata', None)
             if interaction is not None:
                 self._state.store_view(view, self.id, interaction_id=interaction.id)
             else:
@@ -2987,9 +2993,18 @@ class Message(PartialMessage, Hashable):
             are used instead.
 
             .. versionadded:: 1.4
-        view: Optional[:class:`~discord.ui.View`]
+        view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+
+            .. note::
+
+                If you want to update the message to have a :class:`~discord.ui.LayoutView`, you must
+                explicitly set to ``None`` or empty array, as required, the ``content``, ``embed``,
+                ``embeds``, and ``attachments`` parameters.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`~discord.ui.LayoutView` instances.
 
         Raises
         -------
@@ -3036,7 +3051,7 @@ class Message(PartialMessage, Hashable):
             data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
             message = Message(state=self._state, channel=self.channel, data=data)
 
-        if view and not view.is_finished():
+        if view and not view.is_finished() and view.is_dispatchable():
             self._state.store_view(view, self.id)
 
         if delete_after is not None:

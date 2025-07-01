@@ -540,9 +540,18 @@ class Interaction(Generic[ClientT]):
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
-        view: Optional[:class:`~discord.ui.View`]
+        view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`~discord.ui.LayoutView` instances.
         poll: :class:`Poll`
             The poll to create when editing the message.
 
@@ -598,7 +607,7 @@ class Interaction(Generic[ClientT]):
         # The message channel types should always match
         state = _InteractionMessageState(self, self._state)
         message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
-        if view and not view.is_finished():
+        if view and not view.is_finished() and view.is_dispatchable():
             self._state.store_view(view, message.id, interaction_id=self.id)
         return message
 
@@ -1178,6 +1187,12 @@ class InteractionResponse(Generic[ClientT]):
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
 
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
+
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
         allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
@@ -1261,7 +1276,7 @@ class InteractionResponse(Generic[ClientT]):
             params=params,
         )
 
-        if view and not view.is_finished():
+        if view and not view.is_finished() and view.is_dispatchable():
             state.store_view(view, message_id, interaction_id=original_interaction_id)
 
         self._response_type = InteractionResponseType.message_update
@@ -1493,6 +1508,12 @@ class InteractionMessage(Message):
         view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+
+            .. note::
+
+                To update the message to add a :class:`~discord.ui.LayoutView`, you
+                must explicitly set the ``content``, ``embed``, ``embeds``, and
+                ``attachments`` parameters to either ``None`` or an empty array, as appropriate.
 
             .. versionchanged:: 2.6
                 This now accepts :class:`~discord.ui.LayoutView` instances.
