@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "discord.py"
+name = "discord.py-slipstream-fork"
 description = "A Python wrapper for the Discord API"
 readme = { file = "README.rst", content-type = "text/x-rst" }
 license = { file = "LICENSE" }
@@ -34,6 +34,9 @@ Documentation = "https://discordpy.readthedocs.io/en/latest/"
 
 [tool.setuptools.dynamic]
 dependencies = { file = "requirements.txt" }
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
 
 [project.optional-dependencies]
 voice = ["PyNaCl>=1.5.0,<1.6"]
@@ -129,6 +132,3 @@ reportUnnecessaryTypeIgnoreComment = "warning"
 reportUnusedImport = "error"
 pythonVersion = "3.8"
 typeCheckingMode = "basic"
-
-[tool.pytest.ini_options]
-asyncio_mode = "strict"
