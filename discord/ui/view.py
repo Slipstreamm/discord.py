@@ -51,6 +51,7 @@ import os
 import copy
 
 from .item import Item, ItemCallbackType
+from .select import Select
 from .dynamic import DynamicItem
 from ..components import (
     Component,
@@ -336,6 +337,32 @@ class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
     __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
+
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+
+        children: Dict[str, ItemCallbackType[Any, Any]] = {}
+        for base in reversed(cls.__mro__):
+            for name, member in base.__dict__.items():
+                if hasattr(member, '__discord_ui_model_type__'):
+                    children[name] = member
+
+        if len(children) > 25:
+            raise TypeError('View cannot have more than 25 children')
+
+        cls.__view_children_items__ = list(children.values())
+
+    def _init_children(self) -> List[Item[Self]]:
+        children = []
+        for func in self.__view_children_items__:
+            item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
+            item.callback = _ViewCallback(func, self, item)  # type: ignore
+            item._view = self
+            if isinstance(item, Select):
+                item.options = [option.copy() for option in item.options]
+            setattr(self, func.__name__, item)
+            children.append(item)
+        return children
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         self.__timeout = timeout
